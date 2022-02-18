@@ -1,0 +1,4 @@
+TSManager/Plugins/*
+bin/
+.vs/
+obj/
