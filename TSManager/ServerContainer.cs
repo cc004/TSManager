@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Text;
 using System.Threading;
@@ -17,19 +19,44 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using GameLauncher;
 using Newtonsoft.Json;
+using TSManager.Annotations;
 
 namespace TSManager
 {
-    public class ServerContainer
+    public class ServerContainer : INotifyPropertyChanged
     {
         private readonly string _serverName;
         private readonly string _configFile;
         private readonly ManagerConfig _managerConfig;
         private readonly Paragraph _para;
         private Process? _process;
-        public bool IsRunning => _process != null;
+        public bool IsRunning
+        {
+            get => _process != null;
+            set
+            {
+                if (value)
+                {
+                    if (!IsRunning)
+                    {
+                        Start();
+                        OnPropertyChanged(nameof(IsRunning));
+                    }
+                }
+                else
+                {
+                    if (_process != null)
+                    {
+                        _process.Kill();
+                        OnPropertyChanged(nameof(IsRunning));
+                    }
+                }
+            }
+        }
+
         public FlowDocument Document { get; init; }
         public event Action<ServerContainer>? OnTextChanged;
+        public string Name => _serverName;
 
         public ServerContainer(ManagerConfig config, string serverName)
         {
@@ -45,9 +72,8 @@ namespace TSManager
             Document = new FlowDocument(_para);
         }
 
-        public void Start()
+        private void Start()
         {
-            if (_process != null) throw new InvalidOperationException();
             _para.Inlines.Clear();
             _process = new Process
             {
@@ -78,8 +104,9 @@ namespace TSManager
                 AddText($"---process exited with code = {_process.ExitCode}---\n");
                 _process.Dispose();
                 _process = null;
-
+                OnPropertyChanged(nameof(IsRunning));
             };
+
             _process.OutputDataReceived += (_, args) =>
             {
                 AddText($"{args.Data}\n");
@@ -88,6 +115,8 @@ namespace TSManager
             _process.StandardInput.AutoFlush = true;
             _process.BeginOutputReadLine();
             _process.StandardInput.WriteLine();
+
+            OnPropertyChanged(nameof(IsRunning));
         }
         
         private void AddText(string text)
@@ -102,12 +131,6 @@ namespace TSManager
             });
         }
 
-        public void Kill()
-        {
-            if (_process == null) throw new InvalidOperationException();
-            _process.Kill();
-        }
-
         public void SendText(string msg)
         {
             if (_process == null) throw new InvalidOperationException();
@@ -120,5 +143,12 @@ namespace TSManager
             return _serverName;
         }
 
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

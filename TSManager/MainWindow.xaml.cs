@@ -24,8 +24,8 @@ namespace TSManager
     public partial class MainWindow : Window
     {
         private readonly ManagerConfig _cfg;
-        public List<ServerContainer> Containers { get; } = new();
-        public ServerContainer? Current => ComboBox.SelectedItem as ServerContainer;
+        public ObservableCollection<ServerContainer> Containers { get; } = new();
+        public ServerContainer Current => ComboBox.SelectedItem as ServerContainer ?? throw new InvalidOperationException();
         public MainWindow()
         {
             InitializeComponent();
@@ -49,26 +49,31 @@ namespace TSManager
 
         private void StartButton_Click(object _, RoutedEventArgs e)
         {
-            if (ComboBox.SelectedItem is not ServerContainer {IsRunning: false} container) return;
-            container.Start();
+            Current.IsRunning = true;
         }
 
         private void KillButton_Click(object _, RoutedEventArgs e)
         {
-            if (ComboBox.SelectedItem is not ServerContainer {IsRunning: true} container) return;
-            container.Kill();
+            Current.IsRunning = false;
         }
 
         private void ComboBox_SelectionChanged(object _, SelectionChangedEventArgs e)
         {
-            CliTextBox.Document = Current?.Document;
+            CliTextBox.Document = Current.Document;
             CliTextBox.ScrollToEnd();
         }
         
         private void TextBox_PreviewKeyDown(object _, KeyEventArgs e)
         {
-            if (e.Key != Key.Enter || !(Current?.IsRunning ?? false)) return;
-            Current?.SendText(TextBox.Text);
+            if (e.Key != Key.Enter || !Current.IsRunning) return;
+            Current.SendText(TextBox.Text);
+            TextBox.Text = string.Empty;
+        }
+
+        private void SendAllButton_Click(object _, RoutedEventArgs e)
+        {
+            foreach (var container in Containers)
+                if (container.IsRunning) container.SendText(TextBox.Text);
             TextBox.Text = string.Empty;
         }
     }

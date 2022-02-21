@@ -4,6 +4,7 @@
              xmlns:local="clr-namespace:TSManager"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+        <local:ToContainerConverter x:Key="ToContainerConverter"/>
     </Application.Resources>
 </Application>
