@@ -12,13 +12,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TerrariaServerAPI\TerrariaServerAPI\TerrariaServerAPI.csproj" />
+    <ProjectReference Include="..\TerrariaServerAPI\TerrariaServerAPI\TerrariaServerAPI.csproj">
+      <Aliases>Ignore</Aliases>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
     <None Update="Plugins\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Compile Include="..\TerrariaServerAPI\TerrariaServerAPI\ServerConfig.cs" />
   </ItemGroup>
 
 </Project>

@@ -21,18 +21,4 @@ namespace TSManager
             return !(bool) value;
         }
     }
-
-    [ValueConversion(typeof(object), typeof(ServerContainer))]
-    public class ToContainerConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return value;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return value;
-        }
-    }
 }

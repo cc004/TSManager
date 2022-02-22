@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:TSManager"
         xmlns:Linq="clr-namespace:Newtonsoft.Json.Linq;assembly=Newtonsoft.Json" x:Class="TSManager.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="768" Name="Window" Loaded="Window_Loaded">
+        DataContext="{Binding SelectedItem, ElementName=ComboBox, Converter={StaticResource ToContainerConverter}}"
+        Title="{Binding Path=Title, Mode=OneWay}" Height="450" Width="768" Name="Window" Loaded="Window_Loaded">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -37,7 +38,7 @@
                 DataContext="{Binding SelectedItem, ElementName=ComboBox, Converter={StaticResource ToContainerConverter}}"
                 IsEnabled="{Binding IsRunning, Mode=OneWay}" />
         <RichTextBox x:Name="CliTextBox" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Background="Black"
-                     Foreground="LightGray" FontFamily="Consolas" IsReadOnly="True" />
+                     Foreground="LightGray" FontFamily="Consolas" IsReadOnly="True" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible" />
         <TextBox x:Name="TextBox" Margin="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="2"
                  Grid.Column="0" Grid.ColumnSpan="2" TextWrapping="NoWrap" FontSize="15"
                  PreviewKeyDown="TextBox_PreviewKeyDown" />

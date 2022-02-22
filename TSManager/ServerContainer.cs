@@ -56,6 +56,21 @@ namespace TSManager
 
         public FlowDocument Document { get; init; }
         public event Action<ServerContainer>? OnTextChanged;
+        private string _title;
+
+        public string Title
+        {
+            get => _title;
+            private set
+            {
+                _title = value;
+                OnPropertyChanged(nameof(Title));
+            }
+        }
+
+        public Brush Foreground { get; private set; }
+        public Brush Background { get; private set; }
+
         public string Name => _serverName;
 
         public ServerContainer(ManagerConfig config, string serverName)
@@ -70,6 +85,9 @@ namespace TSManager
             _serverName = serverName;
             _managerConfig = config;
             Document = new FlowDocument(_para);
+            Foreground = new SolidColorBrush(Colors.LightGray);
+            Background = new SolidColorBrush(Colors.Black);
+            _title = Assembly.GetExecutingAssembly().GetName().Name ?? string.Empty;
         }
 
         private void Start()
@@ -79,7 +97,7 @@ namespace TSManager
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = typeof(GameLauncher.ServerConfig).Assembly.Location.Replace(".dll", ".exe"),
+                    FileName = "TerrariaServer.exe",
                     ArgumentList =
                     {
                         Path.GetFullPath(_configFile),
@@ -123,7 +141,28 @@ namespace TSManager
         {
             _para.Dispatcher.Invoke(() =>
             {
-                _para.Inlines.Add(text);
+                if (text[0] == 1)
+                {
+                    var args = text[6..^1];
+                    switch (text[1..6])
+                    {
+                        case "title":
+                            Title = args;
+                            break;
+                        case "fgclr":
+                            Foreground = new SolidColorBrush((Color)(typeof(Colors).GetProperty(args)?.GetValue(null) ?? Colors.Gray));
+                            break;
+                        case "bgclr":
+                            Background = new SolidColorBrush((Color)(typeof(Colors).GetProperty(args)?.GetValue(null) ?? Colors.Black));
+                            break;
+                    }
+                    return;
+                }
+                _para.Inlines.Add(new Run(text)
+                {
+                    Background = Background,
+                    Foreground = Foreground
+                });
                 if (_para.Inlines.Count > 2048)
                     for (var i = 0; i < 1024; ++i)
                         _para.Inlines.Remove(_para.Inlines.FirstInline);
